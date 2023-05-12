@@ -12,7 +12,6 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 
 public class Zendesk {
-    private String endpoint = "/api/v2/any_channel/push";
     public HttpResponse<String> pushZendesk (Map<String, Object> map, String host, String auth)
             throws IOException, URISyntaxException, InterruptedException {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -26,13 +25,13 @@ public class Zendesk {
                 .header("content-type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
-        HttpResponse<String> response = HttpClient.newHttpClient()
+        return HttpClient.newHttpClient()
                 .send(request,
                         HttpResponse.BodyHandlers.ofString());
-        return response;
     }
 
     public String apis (String host) {
+        String endpoint = "/api/v2/any_channel/push";
         return "https://" + host + ".zendesk.com/" + endpoint;
     }
 }

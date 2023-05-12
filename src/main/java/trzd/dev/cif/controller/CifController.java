@@ -10,14 +10,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import trzd.dev.cif.model.Integration;
-import trzd.dev.cif.model.Push;
-import trzd.dev.cif.model.ResourceAuthor;
-import trzd.dev.cif.model.Resources;
+import trzd.dev.cif.model.*;
 import trzd.dev.cif.records.Textify;
+import trzd.dev.cif.service.External;
 import trzd.dev.cif.service.Zendesk;
 
 import javax.validation.Valid;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import java.util.Map;
 public class CifController {
 
     Zendesk zendesk = new Zendesk();
+    External external = new External();
 
     @RequestMapping(value = "/manifest")
     ResponseEntity<Object> manifest (HttpServletRequest request) {
@@ -92,7 +94,7 @@ public class CifController {
         map.put("external_resources", new Resources[] { resources });
         map.put("instance_push_id", push.getInstance_id());
 
-        ObjectMapper objectMapper = new ObjectMapper();
+//        ObjectMapper objectMapper = new ObjectMapper();
 //        try {
 //            HttpResponse<String> zdResponse = zendesk.pushZendesk(map, "pdi-rokitvhelp",
 //                    headers.get("authorization").toString());
@@ -106,8 +108,23 @@ public class CifController {
 
     @RequestMapping(value = "/channelback", method = RequestMethod.POST)
     ResponseEntity<Object> channelback (@RequestParam Map<String, Object> param) {
-        System.out.println(param.get("message"));
+        int statusCode = 200;
+        String[] files = new String[] { param.get("file_urls[]").toString() };
         Map<String, Object> map = new HashMap<>();
-        return new ResponseEntity<>(map, HttpStatus.OK);
+        PushMessageAuthor to = new PushMessageAuthor("this-is-newid",
+                "this-is-newname");
+        Channelback channelback = new Channelback(param.get("message").toString(),
+                to, files);
+        map.put("channelback", channelback);
+
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            HttpResponse<String> zdResponse = external.replyExternal(map, "dummy-token-auth");
+//            statusCode = zdResponse.statusCode();
+//            map = objectMapper.readValue(zdResponse.body(), Map.class);
+//        } catch (IOException | URISyntaxException | InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+        return new ResponseEntity<>(map, HttpStatusCode.valueOf(statusCode));
     }
 }

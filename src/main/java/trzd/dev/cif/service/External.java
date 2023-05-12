@@ -13,26 +13,26 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 
 public class External {
-    private String endpoint = "/api/v2/any_channel/push";
-    public HttpResponse<String> replyExternal (Map<String, Object> map, String host, String auth) throws IOException, URISyntaxException, InterruptedException {
+    public HttpResponse<String> replyExternal (Map<String, Object> map, String auth) throws IOException, URISyntaxException, InterruptedException {
         ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .writerWithDefaultPrettyPrinter()
                 .writeValueAsString(map);
         HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(new URI(apis(host)))
+                .uri(new URI(apis()))
                 .header("authorization", auth)
                 .header("content-type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
-        HttpResponse<String> response = HttpClient.newHttpClient()
+        return HttpClient.newHttpClient()
                 .send(httpRequest,
                         HttpResponse.BodyHandlers.ofString());
-        return response;
     }
 
-    public String apis (String host) {
+    public String apis () {
+        String host = "";
+        String endpoint = "/api/v2/any_channel/push";
         return "https://" + host + ".anydomain.com/" + endpoint;
     }
 }
