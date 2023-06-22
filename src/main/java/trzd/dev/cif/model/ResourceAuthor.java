@@ -5,6 +5,8 @@ public class ResourceAuthor {
     private String name;
     private String image_url;
 
+    private String details;
+
     public void setExternal_id(String external_id) {
         this.external_id = external_id;
     }
@@ -27,5 +29,13 @@ public class ResourceAuthor {
 
     public String getImage_url() {
         return image_url;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
     }
 }

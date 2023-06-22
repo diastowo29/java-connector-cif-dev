@@ -29,6 +29,8 @@ import java.util.Map;
 @RequestMapping("/api/v1/cif")
 public class CifController {
 
+    String cifPrefix = "cif_";
+
     Zendesk zendesk = new Zendesk();
     External external = new External();
 
@@ -66,33 +68,89 @@ public class CifController {
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/push", method = RequestMethod.POST,
+    @RequestMapping(value = "/push/chat/{instance_id}", method = RequestMethod.POST,
             consumes = { MediaType.APPLICATION_JSON_VALUE })
-    ResponseEntity<Object> push (@Valid @RequestBody Push push, @RequestHeader Map<String, String> headers) {
+    ResponseEntity<Object> chatPush (@PathVariable("instance_id") String instance_id,
+                                 @Valid @RequestBody TokoPush push,
+                                 @RequestHeader Map<String, String> headers) {
         int statusCode = 200;
         SimpleDateFormat rfc3339Formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
         String time = rfc3339Formatter.format(Calendar.getInstance().getTime());
 
         Map<String, Object> map = new HashMap<>();
-        Resources resources = new Resources();
-        ResourceAuthor resourceAuthor = new ResourceAuthor();
-        resourceAuthor.setName(push.getCustomer().getUsername());
-        resourceAuthor.setExternal_id(
-                Textify.prefix + Textify.zdObject.users_
-                        + push.getCustomer().getId());
-        resources.setAllow_channelback(true);
-        resources.setMessage(push.getMessage().getText());
-        resources.setCreated_at(time);
-        resources.setThread_id(
-                Textify.prefix + Textify.zdObject.thread_
-                        + push.getCustomer().getId());
-        resources.setExternal_id(
-                Textify.prefix + Textify.zdObject.tickets_
-                        + push.getMessage().getId());
-        resources.setAuthor(resourceAuthor);
+        Resources rsc = new Resources();
 
-        map.put("external_resources", new Resources[] { resources });
-        map.put("instance_push_id", push.getInstance_id());
+        ResourceAuthor rscAuthor = new ResourceAuthor();
+        rscAuthor.setName(push.getFull_name());
+        rscAuthor.setExternal_id(
+                cifPrefix + "user_"
+                        + push.getBuyer_id());
+        rscAuthor.setDetails(
+                cifPrefix + "user_"
+                        + push.getBuyer_id());
+
+        rsc.setAllow_channelback(true);
+        rsc.setAuthor(rscAuthor);
+        rsc.setMessage(push.getMessage());
+        rsc.setThread_id(
+                cifPrefix + "thread_"
+                        + push.getBuyer_id());
+        rsc.setExternal_id(
+                cifPrefix + "tickets_"
+                        + push.getMsg_id());
+        rsc.setCreated_at(time);
+
+
+        map.put("external_resources", new Resources[] { rsc });
+        map.put("instance_push_id", instance_id);
+
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            HttpResponse<String> zdResponse = zendesk.pushZendesk(map, "pdi-rokitvhelp",
+//                    headers.get("authorization").toString());
+//            statusCode = zdResponse.statusCode();
+//            map = objectMapper.readValue(zdResponse.body(), Map.class);
+//        } catch (IOException | URISyntaxException | InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+        return new ResponseEntity<>(map, HttpStatusCode.valueOf(statusCode));
+    }
+
+    @RequestMapping(value = "/push/discuss/{instance_id}", method = RequestMethod.POST,
+            consumes = { MediaType.APPLICATION_JSON_VALUE })
+    ResponseEntity<Object> discussPush (@PathVariable("instance_id") String instance_id,
+                                 @Valid @RequestBody DiscussPush push,
+                                 @RequestHeader Map<String, String> headers) {
+        int statusCode = 200;
+        SimpleDateFormat rfc3339Formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+        String time = rfc3339Formatter.format(Calendar.getInstance().getTime());
+
+        Map<String, Object> map = new HashMap<>();
+        Resources rsc = new Resources();
+
+        ResourceAuthor rscAuthor = new ResourceAuthor();
+        rscAuthor.setName("- discussion buyer name -");
+        rscAuthor.setExternal_id(
+                cifPrefix + "user_"
+                        + push.getDiscussion_data().getUser_id());
+        rscAuthor.setDetails(
+                cifPrefix + "user_"
+                        + push.getDiscussion_data().getUser_id());
+
+        rsc.setAllow_channelback(true);
+        rsc.setAuthor(rscAuthor);
+        rsc.setMessage(push.getDiscussion_data().getMessage());
+        rsc.setThread_id(
+                cifPrefix + "thread_discuss_"
+                        + push.getDiscussion_data().getUser_id());
+        rsc.setExternal_id(
+                cifPrefix + "tickets_"
+                        + push.getDiscussion_data().getId());
+        rsc.setCreated_at(time);
+
+
+        map.put("external_resources", new Resources[] { rsc });
+        map.put("instance_push_id", instance_id);
 
 //        ObjectMapper objectMapper = new ObjectMapper();
 //        try {
