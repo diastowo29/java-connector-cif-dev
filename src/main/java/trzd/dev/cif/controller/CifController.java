@@ -2,6 +2,8 @@ package trzd.dev.cif.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -33,6 +35,19 @@ public class CifController {
 
     Zendesk zendesk = new Zendesk();
     External external = new External();
+
+    Logger logger = LoggerFactory.getLogger(CifController.class);
+
+    @RequestMapping(value = "/logging")
+    ResponseEntity<Object> logging () {
+
+        logger.trace("A TRACE Message");
+        logger.debug("A DEBUG Message");
+        logger.info("An INFO Message");
+        logger.warn("A WARN Message");
+        logger.error("An ERROR Message");
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     @RequestMapping(value = "/manifest")
     ResponseEntity<Object> manifest (HttpServletRequest request) {
