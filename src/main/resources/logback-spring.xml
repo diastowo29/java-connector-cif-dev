@@ -38,16 +38,16 @@
     </appender>
 
     <!-- LOG everything at INFO level -->
-<!--    <root level="info">-->
+    <root level="info">
 <!--        <appender-ref ref="RollingFile" />-->
-<!--        <appender-ref ref="Console" />-->
-<!--    </root>-->
+        <appender-ref ref="Console" />
+    </root>
 
     <!-- LOG "com.baeldung*" at TRACE level -->
-    <logger name="trzd.dev.cif" level="trace" additivity="false">
-        <appender-ref ref="RollingFile" />
-        <appender-ref ref="Console" />
-        <appender-ref ref="loggly" />
-    </logger>
+<!--    <logger name="trzd.dev.cif" level="trace" additivity="false">-->
+<!--        <appender-ref ref="RollingFile" />-->
+<!--        <appender-ref ref="Console" />-->
+<!--        <appender-ref ref="loggly" />-->
+<!--    </logger>-->
 
 </configuration>

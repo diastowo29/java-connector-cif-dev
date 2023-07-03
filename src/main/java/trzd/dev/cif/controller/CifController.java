@@ -1,14 +1,12 @@
 package trzd.dev.cif.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +16,13 @@ import trzd.dev.cif.service.External;
 import trzd.dev.cif.service.Zendesk;
 
 import javax.validation.Valid;
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -177,6 +179,26 @@ public class CifController {
 //            throw new RuntimeException(e);
 //        }
         return new ResponseEntity<>(map, HttpStatusCode.valueOf(statusCode));
+    }
+
+    @GetMapping(value = "/get-file", produces = "image/png")
+    ResponseEntity<Object> getFile () throws IOException, URISyntaxException, InterruptedException {
+        String fileUrl = "https://assets.tokopedia.net/assets-unify/img/il-error-not-found.png";
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(new URI(fileUrl)).build();
+        HttpResponse response = HttpClient.newHttpClient()
+                .send(httpRequest,
+                        HttpResponse.BodyHandlers.ofString());
+
+        String headerValue = "attachment; filename=\"buurng.png\"";
+//        File file = new File(response.toString());
+//        InputStreamResource resource = new InputStreamResource(new FileInputStream((File) response.body()));
+        InputStreamResource resource = new ByteArrayInputStream(
+                response.body().toString().getBytes(StandardCharsets.UTF_8));
+        return ResponseEntity.ok()
+                .contentType(MediaType.valueOf(response.headers().map().get("content-type").get(0)))
+                .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
+                .body(resource);
     }
 
     @RequestMapping(value = "/channelback", method = RequestMethod.POST)
